@@ -1,0 +1,44 @@
+# Maintainer: Aaron Bassett <abassett@qnx.com>
+pkgname=libsass
+pkgver=3.6.6
+pkgrel=1
+pkgdesc="C/C++ implementation of a Sass compiler"
+options="!check" # No tests are run when make check is run
+url="https://sass-lang.com/libsass"
+arch="all"
+license="MIT"
+depends="libc++"
+makedepends="autoconf automake libtool pkgconf pkgconf-dev libc++-dev clang"
+subpackages="$pkgname-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/sass/libsass/archive/$pkgver.tar.gz
+    fix-pkgconfig-version.patch
+    "
+
+prepare() {
+    default_prepare
+    autoreconf -vif
+}
+
+build() {
+    CFLAGS="$CFLAGS -fPIC" \
+    CXXFLAGS="$CXXFLAGS -fPIC" \
+    CC="clang" \
+    CXX="clang++" \
+    ./configure \
+        --build=$CBUILD \
+        --host=$CHOST \
+        --prefix=/usr \
+        --disable-static
+    make
+}
+
+package() {
+    make install DESTDIR="$pkgdir"
+    rm -f "$pkgdir"/usr/lib/*.la
+}
+
+
+sha512sums="
+659828c854af391c10a16954425fbeeb5fa036189dea45555cd8046338f7469eb7f8d84134030ce644921514b8f397ef6070b56dfb116ea7ce94328d64576518  libsass-3.6.6.tar.gz
+a03da25e9971a08f7fb1faa58b8e86e144df1ac122809922b115a331fb57126f33a8e4fa4dc36d905efea49296f5f8a70812557026c814b986cc83083a9cc060  fix-pkgconfig-version.patch
+"
